@@ -139,8 +139,8 @@ export class PatientService {
                         receiptDate: new Date().toLocaleDateString(),
                         patientName: newPatient.name,
                         patientEmail: newPatient.email,
-                        items: [{ description: 'Registration & Consultation', quantity: 1, unitPrice: 5000, totalPrice: 5000 }],
-                        subtotal: 5000, amountPaid: 5000, totalDueFromPatient: 5000, paymentMethod: 'New Registration Fee', isHmoCovered: false,
+                        items: [{ description: 'Registration & Consultation', quantity: 1, unitPrice: 20000, totalPrice: 20000 }],
+                        subtotal: 20000, amountPaid: 20000, totalDueFromPatient: 20000, paymentMethod: 'New Registration Fee', isHmoCovered: false,
                         hmoName: 'N/A', coveredAmount: 0, latestDentalRecord: null
                     };
                 }

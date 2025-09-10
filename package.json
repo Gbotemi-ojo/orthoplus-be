@@ -11,6 +11,7 @@
     "seed:user": "ts-node seedData.ts",
     "seed:settings": "ts-node seedSettings.ts",
     "seed:billing": "ts-node seedBilling.ts",
+    "seed:patient": "ts-node seedPatient.ts",
     "dev": "nodemon src/index.ts",
     "start": "ts-node src/index.ts",
     "vercel-build": "echo hello"
