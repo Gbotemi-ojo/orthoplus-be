@@ -15,6 +15,21 @@
         th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
         th { background-color: #f2f2f2; color: #333; }
         .note { font-size: 0.85em; color: #666; margin-top: 15px; padding: 10px; background-color: #f9f9f9; border-left: 3px solid #007bff; }
+        .payment-instructions {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #eaf5ff;
+            border-left: 4px solid #0056b3;
+            border-radius: 4px;
+        }
+        .payment-instructions h3 {
+            margin-top: 0;
+            color: #0056b3;
+        }
+        .payment-instructions p {
+            margin: 5px 0;
+            font-size: 0.9em;
+        }
     </style>
 </head>
 <body>
@@ -77,6 +92,14 @@
             <p><strong>Treatment Plan:</strong> {{latestDentalRecord.treatmentPlan}}</p>
         </div>
         {{/if}}
+
+        <div class="payment-instructions">
+            <h3>Official Payment Information</h3>
+            <p>For all direct payments (including co-pays or non-covered services), please use <strong>ONLY</strong> the account details below:</p>
+            <p><strong>Account Name:</strong> Orthoplus Dental Specialists</p>
+            <p><strong>Bank:</strong> Stanbic IBTC</p>
+            <p><strong>Account Number:</strong> 0003626002</p>
+        </div>
 
         <div class="footer">
             <p>Thank you for choosing orthoplus Dental Clinic!</p>
