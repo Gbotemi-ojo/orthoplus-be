@@ -1,6 +1,7 @@
+// src/services/data-analysis.service.ts
 import { db } from '../config/database';
 import { patients, dentalRecords, dailyVisits, users, inventoryItems, inventoryTransactions, hmoProviders, serviceItems } from '../../db/schema';
-import { sql, and, eq, gte, lte, desc, isNull, not, between, count } from 'drizzle-orm';
+import { sql, and, eq, gte, lte, desc, isNull, not, between, count, gt } from 'drizzle-orm';
 
 export class DataAnalysisService {
 
@@ -269,6 +270,31 @@ export class DataAnalysisService {
             .limit(10);
             
         return usageData;
+    }
+    
+    /**
+     * NEW METHOD
+     * Fetches details of patients with outstanding balances.
+     */
+    async getOutstandingPatientsDetails() {
+        const outstandingPatients = await db
+            .select({
+                id: patients.id,
+                name: patients.name,
+                outstanding: patients.outstanding,
+                phoneNumber: patients.phoneNumber,
+                email: patients.email,
+                lastVisit: sql<string>`(
+                    SELECT MAX(created_at) 
+                    FROM ${dentalRecords} 
+                    WHERE ${dentalRecords.patientId} = ${patients.id}
+                )`.as('lastVisit')
+            })
+            .from(patients)
+            .where(gt(patients.outstanding, '0.00'))
+            .orderBy(desc(patients.outstanding));
+
+        return outstandingPatients;
     }
 }
 

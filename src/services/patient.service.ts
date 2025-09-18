@@ -139,8 +139,8 @@ export class PatientService {
                         receiptDate: new Date().toLocaleDateString(),
                         patientName: newPatient.name,
                         patientEmail: newPatient.email,
-                        items: [{ description: 'Registration & Consultation', quantity: 1, unitPrice: 20000, totalPrice: 20000 }],
-                        subtotal: 20000, amountPaid: 20000, totalDueFromPatient: 20000, paymentMethod: 'New Registration Fee', isHmoCovered: false,
+                        items: [{ description: 'Registration & Consultation', quantity: 1, unitPrice: 0, totalPrice: 0 }],
+                        subtotal: 0, amountPaid: 0, totalDueFromPatient: 0, paymentMethod: 'New Registration Fee', isHmoCovered: false,
                         hmoName: 'N/A', coveredAmount: 0, latestDentalRecord: null
                     };
                 }
@@ -201,8 +201,8 @@ export class PatientService {
                     receiptData = {
                         receiptNumber: `REG-FAM-${familyHead.id}-${Date.now()}`, receiptDate: new Date().toLocaleDateString(),
                         patientName: familyHead.name, patientEmail: familyHead.email,
-                        items: [{ description: 'Registration & Consultation (Family)', quantity: 1, unitPrice: 10000, totalPrice: 10000 }],
-                        subtotal: 10000, amountPaid: 10000, totalDueFromPatient: 10000, paymentMethod: 'New Registration Fee', isHmoCovered: false,
+                        items: [{ description: 'Registration & Consultation (Family)', quantity: 1, unitPrice: 0, totalPrice: 0 }],
+                        subtotal: 0, amountPaid: 0, totalDueFromPatient: 0, paymentMethod: 'New Registration Fee', isHmoCovered: false,
                         hmoName: 'N/A', coveredAmount: 0, latestDentalRecord: null
                     };
                 }

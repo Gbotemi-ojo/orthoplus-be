@@ -22,6 +22,8 @@ router.get('/patient-flow', dataAnalysisController.getPatientFlowAnalysis);
 // --- FINANCIAL ANALYTICS ---
 router.get('/hmo-distribution', dataAnalysisController.getHmoProviderDistribution);
 router.get('/treatment-revenue', dataAnalysisController.getTreatmentRevenueAnalysis);
+router.get('/outstanding-patients', dataAnalysisController.getOutstandingPatientsDetails);
+
 
 // --- INVENTORY ANALYTICS ---
 router.get('/inventory-usage-top', dataAnalysisController.getMostUsedInventoryItems);

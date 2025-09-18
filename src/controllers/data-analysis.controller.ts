@@ -1,3 +1,4 @@
+// src/controllers/data-analysis.controller.ts
 import { Request, Response } from 'express';
 import { dataAnalysisService } from '../services/data-analysis.service';
 
@@ -116,6 +117,20 @@ export class DataAnalysisController {
         } catch (error) {
             console.error('Error fetching top inventory usage:', error);
             res.status(500).json({ error: 'Server error fetching top inventory usage.' });
+        }
+    }
+
+    /**
+     * NEW METHOD
+     * Handles the request for patients with outstanding balances.
+     */
+    getOutstandingPatientsDetails = async (req: Request, res: Response): Promise<void> => {
+        try {
+            const details = await dataAnalysisService.getOutstandingPatientsDetails();
+            res.json(details);
+        } catch (error) {
+            console.error('Error fetching outstanding patients details:', error);
+            res.status(500).json({ error: 'Server error fetching outstanding patients details.' });
         }
     }
 }
