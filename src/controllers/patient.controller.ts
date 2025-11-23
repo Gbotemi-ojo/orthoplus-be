@@ -1,7 +1,7 @@
 // src/controllers/patient.controller.ts
 import { Request, Response, NextFunction } from 'express';
 import { patientService } from '../services/patient.service';
-import { settingsService } from '../services/settings.service'; // IMPORTED
+import { settingsService } from '../services/settings.service'; 
 import { InferInsertModel } from 'drizzle-orm';
 import { patients, dentalRecords } from '../../db/schema';
 
@@ -15,9 +15,8 @@ interface AuthenticatedRequest extends Request {
 export class PatientController {
   constructor() {}
 
-  // ... (submitGuestPatient, submitGuestFamilyPatient, addFamilyMember, recordReturningGuestVisit methods are unchanged) ...
   submitGuestPatient = async (req: Request, res: Response): Promise<void> => {
-    const { name, sex, dateOfBirth, phoneNumber, email, address, hmo } = req.body; // UPDATED: Destructured address
+    const { name, sex, dateOfBirth, phoneNumber, email, address, hmo } = req.body; 
     if (!name || !sex || !phoneNumber) {
       res.status(400).json({ error: 'Name, sex, and phone number are required for a primary patient.' });
       return;
@@ -27,7 +26,7 @@ export class PatientController {
       return;
     }
     try {
-      const newPatient = await patientService.addGuestPatient({ name, sex, dateOfBirth, phoneNumber, email, address, hmo }); // UPDATED: Passed address
+      const newPatient = await patientService.addGuestPatient({ name, sex, dateOfBirth, phoneNumber, email, address, hmo }); 
       res.status(201).json({ message: 'Patient information submitted successfully.', patient: newPatient });
     } catch (error: any) {
       console.error('Error submitting guest patient info:', error);
@@ -97,15 +96,13 @@ export class PatientController {
     }
   };
 
-     recordReturningGuestVisit = async (req: Request, res: Response): Promise<void> => {
-        const { identifier } = req.body; // Changed from phoneNumber to identifier
+  recordReturningGuestVisit = async (req: Request, res: Response): Promise<void> => {
+        const { identifier } = req.body; 
         if (!identifier) {
-          // Updated validation message
           res.status(400).json({ error: 'Phone number or email identifier is required.' });
           return;
         }
         try {
-          // Pass the identifier to the service
           const result = await patientService.addReturningGuest(identifier);
           res.status(200).json(result);
         } catch (error: any) {
@@ -120,7 +117,6 @@ export class PatientController {
       
     getTodaysReturningPatients = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
         try {
-            // MODIFIED: Fetch settings and pass to service
             const settings = await settingsService.getSettings();
             const todaysVisits = await patientService.getTodaysReturningPatients(req.user, settings);
             res.json(todaysVisits);
@@ -132,7 +128,6 @@ export class PatientController {
 
   getAllPatients = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
     try {
-      // MODIFIED: Fetch settings and pass to service
       const settings = await settingsService.getSettings();
       const allPatients = await patientService.getAllPatients(req.user, settings);
       res.json(allPatients);
@@ -149,7 +144,6 @@ export class PatientController {
       return;
     }
     try {
-      // MODIFIED: Fetch settings and pass to service
       const settings = await settingsService.getSettings();
       const patient = await patientService.getPatientById(patientId, req.user, settings);
       
@@ -164,10 +158,9 @@ export class PatientController {
     }
   }
 
-  // ... (updatePatient and other methods are unchanged) ...
   updatePatient = async (req: Request, res: Response): Promise<void> => {
     const patientId = parseInt(req.params.id);
-    const { name, sex, dateOfBirth, phoneNumber, email, address, hmo } = req.body; // UPDATED: Destructured address
+    const { name, sex, dateOfBirth, phoneNumber, email, address, hmo } = req.body;
     if (isNaN(patientId)) {
       res.status(400).json({ error: 'Invalid patient ID.' });
       return;
@@ -181,7 +174,6 @@ export class PatientController {
         return;
     }
     try {
-      // UPDATED: Added address to update payload
       const updateData: Partial<InferInsertModel<typeof patients>> = { name, sex, dateOfBirth: dateOfBirth ? new Date(dateOfBirth) : null, phoneNumber, email, address, hmo };
       Object.keys(updateData).forEach(key => updateData[key as keyof typeof updateData] === undefined && delete updateData[key as keyof typeof updateData]);
       const result = await patientService.updatePatient(patientId, updateData);
@@ -193,6 +185,33 @@ export class PatientController {
     } catch (error: any) {
       console.error('Error in updatePatient controller:', error);
       res.status(500).json({ error: 'Server error updating patient information.' });
+    }
+  }
+
+  // [NEW CONTROLLER] Manually update balance
+  updateBalance = async (req: Request, res: Response): Promise<void> => {
+    const patientId = parseInt(req.params.id);
+    const { totalBill, amountPaid } = req.body;
+
+    if (isNaN(patientId)) {
+        res.status(400).json({ error: 'Invalid patient ID.' });
+        return;
+    }
+
+    if (totalBill === undefined || amountPaid === undefined) {
+        res.status(400).json({ error: 'totalBill and amountPaid are required.' });
+        return;
+    }
+
+    try {
+        const result = await patientService.processPatientPayment(patientId, totalBill, amountPaid);
+        res.json({ 
+            message: 'Balance updated successfully.', 
+            newBalance: result.newOutstanding 
+        });
+    } catch (error: any) {
+        console.error('Error in updateBalance controller:', error);
+        res.status(error.message === 'Patient not found.' ? 404 : 500).json({ error: error.message || 'Server error.' });
     }
   }
 

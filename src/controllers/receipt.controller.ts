@@ -1,3 +1,4 @@
+// src/controllers/receipt.controller.ts
 import { Request, Response } from 'express';
 import { emailService } from '../services/email.service';
 import { patientService } from '../services/patient.service';
@@ -39,19 +40,22 @@ export class ReceiptController {
         return;
       }
 
+      // 2. Process the Payment & Update Balance using the Centralized Service
+      // Note: receiptData.totalDueFromPatient corresponds to the bill for the CURRENT visit (subtotal - hmo).
       const amountPaidNow = parseFloat(receiptData.amountPaid || 0);
-      const totalDueForTx = parseFloat(receiptData.totalDueFromPatient || 0);
-      const previousOutstanding = parseFloat(patient.outstanding as string || '0');
-      const balanceChangeFromTx = totalDueForTx - amountPaidNow;
-      const newFinalOutstanding = previousOutstanding + balanceChangeFromTx;
+      const currentVisitBill = parseFloat(receiptData.totalDueFromPatient || 0);
 
-      await patientService.updatePatient(patient.id, { outstanding: newFinalOutstanding.toFixed(2) });
+      const paymentResult = await patientService.processPatientPayment(
+        patient.id, 
+        currentVisitBill, 
+        amountPaidNow
+      );
 
-      // MODIFICATION: The payload now includes the definitive new outstanding balance calculated above.
-      // This ensures the email template receives the exact same value that was saved to the database.
+      // 3. Prepare Email Payload with accurate updated balance
       const emailPayload = {
         ...receiptData,
-        outstanding: newFinalOutstanding.toFixed(2)
+        previousOutstanding: paymentResult.previousOutstanding, 
+        outstanding: paymentResult.newOutstanding 
       };
 
       const emailResult = await emailService.sendReceiptEmail(targetEmail, emailPayload, senderUserId);

@@ -39,38 +39,19 @@ interface NewGuestFamilyData extends NewFamilyHeadData {
 
 // --- HELPER FUNCTIONS ---
 
-/**
- * Checks if a user has permission to see contact details based on settings.
- * @param user The authenticated user object.
- * @param settings The application settings object.
- * @returns {boolean} True if the user has permission, false otherwise.
- */
 const canUserSeeContactDetails = (user: AuthenticatedUser | undefined, settings: any): boolean => {
-    // If there's no user context, they can't see the details.
     if (!user) {
         return false;
     }
-
-    // Now TypeScript knows 'user' is defined for all subsequent checks.
-    // The 'owner' role always has access.
     if (user.role === 'owner') {
         return true;
     }
-
-    // Check for valid settings and the specific permission array's existence.
     if (!settings || !settings.patientManagement || !settings.patientManagement['canSeeContactDetails']) {
         return false;
     }
-
-    // Finally, check if the user's role is in the permissions list.
     return settings.patientManagement['canSeeContactDetails'].includes(user.role);
 };
 
-/**
- * Strips sensitive contact info from a patient object and its nested relatives.
- * @param patient The patient object to sanitize.
- * @returns A new patient object without contact details, or null.
- */
 const stripContactInfo = (patient: any): any | null => {
     if (!patient) return null;
     const { phoneNumber, email, address, ...safePatientData } = patient;
@@ -94,7 +75,39 @@ const stripContactInfo = (patient: any): any | null => {
 export class PatientService {
   constructor() {}
   
-  // ... (addGuestPatient, addFamilyMember, etc. - all other methods remain the same) ...
+  // [NEW METHOD] Centralized logic for handling payments and updating debt
+  async processPatientPayment(patientId: number, totalBill: number, amountPaid: number) {
+    // 1. Get current patient state to find existing debt
+    const [patient] = await db.select().from(patients).where(eq(patients.id, patientId)).limit(1);
+    
+    if (!patient) {
+        throw new Error('Patient not found.');
+    }
+
+    // 2. Normalize numbers
+    const currentOutstanding = parseFloat(patient.outstanding?.toString() || '0');
+    const billAmount = parseFloat(totalBill.toString()); // The cost of NEW services today
+    const paidAmount = parseFloat(amountPaid.toString()); // What they paid today
+
+    // 3. Calculate New Balance
+    // Formula: New Balance = (Old Debt) + (New Bill) - (Amount Paid)
+    const newOutstanding = currentOutstanding + billAmount - paidAmount;
+
+    // 4. Update Database
+    await db.update(patients)
+        .set({ 
+            outstanding: newOutstanding.toFixed(2), 
+            updatedAt: new Date() 
+        })
+        .where(eq(patients.id, patientId));
+
+    return { 
+        success: true, 
+        previousOutstanding: currentOutstanding.toFixed(2),
+        newOutstanding: newOutstanding.toFixed(2) 
+    };
+  }
+
   async addGuestPatient(patientData: NewFamilyHeadData, sendReceipt: boolean = true): Promise<PatientSelect> {
         const { name, sex, dateOfBirth, phoneNumber, email, address, hmo } = patientData;
         const existingPatient = await db.select().from(patients).where(eq(patients.phoneNumber, phoneNumber)).limit(1);
@@ -339,12 +352,6 @@ export class PatientService {
         return shouldSeeContact ? patient : stripContactInfo(patient);
     }
     
-    /**
-     * FOR INTERNAL USE: Fetches a patient's full record, including contact info,
-     * without applying permission-based stripping.
-     * @param patientId The ID of the patient to fetch.
-     * @returns The full patient object or null if not found.
-     */
     async _getPatientWithContactInfoForInternalUse(patientId: number): Promise<PatientSelect | null> {
         const [patient] = await db.select().from(patients).where(eq(patients.id, patientId)).limit(1);
         return patient || null;
