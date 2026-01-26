@@ -9,6 +9,12 @@ interface AuthenticatedRequest extends Request {
   };
 }
 
+// Helper function to safely parse integer parameters
+function getParamInt(param: string | string[] | undefined): number {
+  const value = Array.isArray(param) ? param[0] : param;
+  return parseInt(value ?? '', 10);
+}
+
 export class InventoryController {
   constructor() {}
 
@@ -23,7 +29,7 @@ export class InventoryController {
   }
 
   getItemById = async (req: Request, res: Response): Promise<void> => {
-    const itemId = parseInt(req.params.id);
+    const itemId = getParamInt(req.params.id);
     if (isNaN(itemId)) {
       res.status(400).json({ error: 'Invalid item ID.' });
       return;
@@ -90,7 +96,7 @@ export class InventoryController {
   }
 
   updateItem = async (req: Request, res: Response): Promise<void> => {
-    const itemId = parseInt(req.params.id);
+    const itemId = getParamInt(req.params.id);
     const { name, description, unitOfMeasure, reorderLevel, costPerUnit, supplier, category } = req.body;
 
     if (isNaN(itemId)) {
@@ -124,7 +130,7 @@ export class InventoryController {
   }
 
   deleteItem = async (req: Request, res: Response): Promise<void> => {
-    const itemId = parseInt(req.params.id);
+    const itemId = getParamInt(req.params.id);
 
     if (isNaN(itemId)) {
       res.status(400).json({ error: 'Invalid item ID.' });
@@ -185,7 +191,7 @@ export class InventoryController {
   }
 
   getTransactionsByItemId = async (req: Request, res: Response): Promise<void> => {
-    const itemId = parseInt(req.params.itemId);
+    const itemId = getParamInt(req.params.itemId);
     if (isNaN(itemId)) {
       res.status(400).json({ error: 'Invalid item ID.' });
       return;
@@ -211,7 +217,7 @@ export class InventoryController {
   }
 
   getItemStockStatus = async (req: Request, res: Response): Promise<void> => {
-    const itemId = parseInt(req.params.id);
+    const itemId = getParamInt(req.params.id);
     if (isNaN(itemId)) {
       res.status(400).json({ error: 'Invalid item ID.' });
       return;
