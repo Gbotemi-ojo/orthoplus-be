@@ -10,6 +10,12 @@ interface AuthenticatedRequest extends Request {
   };
 }
 
+// Helper function to safely parse integer parameters
+function getParamInt(param: string | string[] | undefined): number {
+  const value = Array.isArray(param) ? param[0] : param;
+  return parseInt(value ?? '', 10);
+}
+
 export class UserController {
   constructor() {}
 
@@ -81,7 +87,7 @@ export class UserController {
   };
 
   getUserById = async (req: Request, res: Response): Promise<void> => {
-    const userId = parseInt(req.params.id);
+    const userId = getParamInt(req.params.id);
     if (isNaN(userId)) {
       res.status(400).json({ error: 'Invalid user ID.' });
       return;
@@ -101,7 +107,7 @@ export class UserController {
   };
 
   updateUser = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
-    const userId = parseInt(req.params.id);
+    const userId = getParamInt(req.params.id);
     const updateData = req.body;
     const currentLoggedInUserId = req.user!.userId;
 
@@ -120,7 +126,7 @@ export class UserController {
   };
 
   updateUserStatus = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
-    const userId = parseInt(req.params.id);
+    const userId = getParamInt(req.params.id);
     const { isActive } = req.body;
     const currentLoggedInUserId = req.user!.userId;
 
@@ -139,7 +145,7 @@ export class UserController {
   };
 
   deleteUser = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
-    const userId = parseInt(req.params.id);
+    const userId = getParamInt(req.params.id);
     const currentLoggedInUserId = req.user!.userId;
 
     if (isNaN(userId)) {
