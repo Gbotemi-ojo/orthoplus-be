@@ -2,6 +2,12 @@
 import { Request, Response } from 'express';
 import { billingService } from '../services/billing.service';
 
+// Helper function to safely parse integer parameters
+function getParamInt(param: string | string[] | undefined): number {
+  const value = Array.isArray(param) ? param[0] : param;
+  return parseInt(value ?? '', 10);
+}
+
 export class BillingController {
     // Public endpoint for frontend to fetch options
     getBillingOptions = async (req: Request, res: Response): Promise<void> => {
@@ -24,7 +30,12 @@ export class BillingController {
     };
     
     updateServiceItem = async (req: Request, res: Response): Promise<void> => {
-        const id = parseInt(req.params.id);
+        const id = getParamInt(req.params.id);
+        if (isNaN(id)) {
+            res.status(400).json({ error: 'Invalid service item ID.' });
+            return;
+        }
+
         try {
             await billingService.updateServiceItem(id, req.body);
             res.status(200).json({ message: 'Service item updated successfully.' });
@@ -33,9 +44,14 @@ export class BillingController {
         }
     };
 
-        // NEW: Handle service item deletion
+    // NEW: Handle service item deletion
     deleteServiceItem = async (req: Request, res: Response): Promise<void> => {
-        const id = parseInt(req.params.id);
+        const id = getParamInt(req.params.id);
+        if (isNaN(id)) {
+            res.status(400).json({ error: 'Invalid service item ID.' });
+            return;
+        }
+
         try {
             await billingService.deleteServiceItem(id);
             res.status(200).json({ message: 'Service item deleted successfully.' });
@@ -55,7 +71,12 @@ export class BillingController {
     };
 
     updateHmoProvider = async (req: Request, res: Response): Promise<void> => {
-        const id = parseInt(req.params.id);
+        const id = getParamInt(req.params.id);
+        if (isNaN(id)) {
+            res.status(400).json({ error: 'Invalid HMO provider ID.' });
+            return;
+        }
+
         try {
             await billingService.updateHmoProvider(id, req.body);
             res.status(200).json({ message: 'HMO provider updated successfully.' });
@@ -64,8 +85,13 @@ export class BillingController {
         }
     };
 
-        deleteHmoProvider = async (req: Request, res: Response): Promise<void> => {
-        const id = parseInt(req.params.id);
+    deleteHmoProvider = async (req: Request, res: Response): Promise<void> => {
+        const id = getParamInt(req.params.id);
+        if (isNaN(id)) {
+            res.status(400).json({ error: 'Invalid HMO provider ID.' });
+            return;
+        }
+
         try {
             await billingService.deleteHmoProvider(id);
             res.status(200).json({ message: 'HMO provider deleted successfully.' });
